@@ -1,0 +1,78 @@
+		.GLOBAL _START
+		.TEXT
+
+_START:	
+		LDR R0, =STDIN
+		MOV R1, #0
+		SWI 0x66
+		MOV R9, R0
+		LDR R1, =MEM
+		MOV R2, #80
+		SWI 0x6A
+		MOV R0, R9
+		SWI 0x68
+		@NOVI FILE
+		LDR R0, =MEM
+		MOV R1, #0
+		SWI 0x66
+		MOV R9, R0
+		LDR R1, =FROMF
+		MOV R2, #81
+		SWI 0x6A
+		MOV R0, R9
+		SWI 0x68
+		MOV R0, R1
+		SWI 0x02
+		MOV R3, R0
+		MOV R4, R0
+		LDRB R5, [R3]
+		B SL2
+LOGIC: 	LDRB R5, [R3]
+		LDRB R6, [R4]
+		CMP R5, R6
+		BNE SL2
+		B H2
+SL2:	LDRB R6, [R4], #1
+		CMP R6, #32
+		BEQ LOGIC
+		CMP R6, #46
+		BEQ SL1
+		B SL2		
+SL1:	LDRB R5, [R3]
+		CMP R5, #32
+		BEQ H1
+		CMP R5, #46
+		BEQ KRAJ
+		ADD R3, R3, #1
+		B SL1		
+H1:		LDRB R5, [R3], #1
+		MOV R6, R5
+		MOV R4, R3
+		B SL2
+H2:		MOV R7, R3
+		MOV R8, R4
+H22: 	LDRB R5, [R7], #1
+		LDRB R6, [R8], #1
+		CMP R5, #32
+		BEQ ISPIS
+		CMP R5, #46
+		BEQ ISPIS
+		CMP R5, R6
+		BNE LOGIC
+		B H22
+ISPIS:	MOV R7, R3
+		@SUB R7, R7, #1
+H3:		LDRB R0, [R7], #1
+		SWI 0x00
+		CMP R0, #32
+		BEQ H4
+		CMP R0, #46
+		BEQ KRAJ
+		B H3
+H4:		LDRB R5, [R3]
+		B SL2
+KRAJ:	SWI 0x11
+		.DATA
+STDIN:	.ASCIZ "stdin.txt"
+MEM:	.SKIP 80
+FROMF:	.SKIP 80
